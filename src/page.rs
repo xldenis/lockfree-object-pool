@@ -4,7 +4,7 @@ use std::{
 };
 
 pub struct Page<T> {
-    data: [UnsafeCell<T>; 8],
+    data: [UnsafeCell<T>; 1],
     free: AtomicU8,
 }
 
@@ -17,17 +17,8 @@ impl<T> Page<T> {
         I: Fn() -> T,
     {
         Self {
-            data: [
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-                UnsafeCell::new(init()),
-            ],
-            free: AtomicU8::new(u8::MAX),
+            data: [UnsafeCell::new(init())],
+            free: AtomicU8::new(1),
         }
     }
 
