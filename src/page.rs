@@ -5,7 +5,7 @@ use std::{
 };
 
 pub struct Page<T> {
-    data: [UnsafeCell<T>; 16],
+    data: [UnsafeCell<T>; 1],
     free: AtomicU16,
 }
 
@@ -19,7 +19,7 @@ impl<T> Page<T> {
     {
         Self {
             data: from_fn(|_| UnsafeCell::new(init())),
-            free: AtomicU16::new(u16::MAX),
+            free: AtomicU16::new(1),
         }
     }
 
