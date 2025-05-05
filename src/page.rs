@@ -1,11 +1,12 @@
 use std::{
+    array::from_fn,
     cell::UnsafeCell,
-    sync::atomic::{AtomicU8, Ordering},
+    sync::atomic::{AtomicU16, AtomicU8, Ordering},
 };
 
 pub struct Page<T> {
-    data: [UnsafeCell<T>; 1],
-    free: AtomicU8,
+    data: [UnsafeCell<T>; 16],
+    free: AtomicU16,
 }
 
 pub type PageId = u8;
@@ -17,8 +18,8 @@ impl<T> Page<T> {
         I: Fn() -> T,
     {
         Self {
-            data: [UnsafeCell::new(init())],
-            free: AtomicU8::new(1),
+            data: from_fn(|_| UnsafeCell::new(init())),
+            free: AtomicU16::new(u16::MAX),
         }
     }
 
@@ -28,7 +29,7 @@ impl<T> Page<T> {
     }
 
     #[cfg(test)]
-    pub(crate) fn get_mask(&self) -> u8 {
+    pub(crate) fn get_mask(&self) -> u16 {
         self.free.load(Ordering::Relaxed)
     }
 
@@ -48,7 +49,7 @@ impl<T> Page<T> {
 
     #[inline]
     pub fn free(&self, id: &PageId) {
-        let mask: u8 = 1 << id;
+        let mask: u16 = 1 << id;
         self.free.fetch_or(mask, Ordering::SeqCst);
     }
 
@@ -74,7 +75,7 @@ mod tests {
     fn test_page_01() {
         let page = Page::<u32>::new(|| 0);
         assert!(!page.is_full());
-        assert_eq!(page.get_mask(), u8::MAX);
+        assert_eq!(page.get_mask(), u16::MAX);
     }
 
     #[test]
